@@ -1,0 +1,22 @@
+{
+    "user": {
+
+    "discord_id": "",
+
+    "categories": {
+        [
+            "Books": {
+                "sentiment": 0.5,
+                "passionate": true,
+            
+                },
+
+                "Anime": {
+                    "sentiment": 0.5,
+                    "passionate": true,
+                
+                },
+        ]
+    }
+}
+}
