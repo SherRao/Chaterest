@@ -1,8 +1,18 @@
 //const firebase = require("../../backend/functions/index");
 const language = require('@google-cloud/language');
+const admin = require('firebase-admin');
 
+
+const serviceAccount = require('');
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+  
 // Instantiates a language service client
 const client = new language.LanguageServiceClient();
+
+// Instantiates firestore connection
+const firestore = admin.firestore();
 
 // Stores the associated channel and role for each category.
 let categoryData = {
@@ -31,7 +41,7 @@ module.exports = {
             return;
 
         // let category = getCategory(message);
-        let sentiment = getSentiment(message);
+        let sentiment = await getSentiment(message);
         
 
     }
@@ -53,7 +63,7 @@ function getCategory(message) {
  * Looks at the message sent and updates the sentiment for other functions to use.
  * 
  */
-function getSentiment(message) {
+async function getSentiment(message) {
     const document = {
         content: message,
         type: 'PLAIN_TEXT',
