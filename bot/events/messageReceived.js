@@ -54,7 +54,7 @@ module.exports = {
         } catch (error) {
             console.error(error);
         }
-        
+
     },
 }
 
@@ -87,17 +87,17 @@ async function getCategory(message) {
  */
 async function getSentiment(message) {
     const document = {
-        content: message,
+        content: message.content,
         type: 'PLAIN_TEXT',
-      };
+    };
 
-      const [result] = await client.analyzeSentiment({document: document});
-      const sentiment = result.documentSentiment;
-    
-      console.log(`Text: ${message}`);
-      console.log(`Sentiment score: ${sentiment.score}`);
-      console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
-    
+    const [result] = await client.analyzeSentiment({ document: document });
+    const sentiment = result.documentSentiment;
+
+    console.log(`Text: ${message}`);
+    console.log(`Sentiment score: ${sentiment.score}`);
+    console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
+
     return sentiment;
 }
 
