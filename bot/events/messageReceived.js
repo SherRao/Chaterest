@@ -39,7 +39,7 @@ module.exports = {
         try {
             let server = message.guild;
             let author = message.author.id;
-            
+
             const docRef = firestore.collection('users').doc(author);
 
             if (author.bot)
@@ -47,17 +47,23 @@ module.exports = {
 
             // let category = getCategory(message);
             let sentiment = await getSentiment(message);
-            // let category = await getCategory(message);
+            let category = await getCategory(message);
 
-            if (sentiment && sentiment.score > 0.8) {
-                console.log("Updating sentiment")
-                const categorySentiment = await getUserSentiment(author, "sentimentTest");
-                console.log("Previous sentiment: ", categorySentiment)
-                await docRef.set({
-                    sentimentTest: categorySentiment + 1
-                });
+            if (category && category.categories) {
+                const mainCategory = category.categories[0].name;
+                if (sentiment && sentiment.score > 0) {
+                    console.log("Updating sentiment for user", author, "in category ", mainCategory)
+                    const categorySentiment = await getUserSentiment(author, mainCategory);
+                    console.log("Previous sentiment: ", categorySentiment)
+                    await docRef.set({
+                        [mainCategory]: categorySentiment ? categorySentiment + 1 : 1
+                    });
+                } else {
+                    console.log("Not high enough sentiment", sentiment);
+                }
+            } else {
+                console.log("No categories found for message: ", message)
             }
-
             
         } catch (error) {
             console.error(error);
