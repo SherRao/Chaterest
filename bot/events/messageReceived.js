@@ -38,7 +38,7 @@ module.exports = {
 
         let server = message.guild;
         let author = message.author.id;
-        const docRef = db.collection('users').doc(author);
+        const docRef = firestore.collection('users').doc(author);
 
         if (author.bot)
             return;
