@@ -1,5 +1,6 @@
 const fs = require('fs');
 const config = require('./config.json');
+const token = require('./keys/discord.json');
 
 const Discord = require('discord.js');
 const client = new Discord.Client();
@@ -29,7 +30,7 @@ function main() {
         logger.info("Bot loaded!");
     });
 
-    client.login(config.token);
+    client.login(token.token);
 }
 
 
