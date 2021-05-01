@@ -3,7 +3,7 @@ const language = require('@google-cloud/language');
 const admin = require('firebase-admin');
 
 
-const serviceAccount = require('');
+const serviceAccount = require('../keys/ruhacks-2021-312420-d51b97cbf0b9.json');
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
   });
@@ -25,7 +25,6 @@ let categoryData = {
     "tech": {
         "channel": "projects n tech help",
         "role": "techie",
-
     },
 };
 
@@ -35,10 +34,12 @@ let categoryData = {
 module.exports = {
     name: "message",
     once: false,
+    execute: async (client, logger, message) => {
 
-    execute: (client, logger, message) => {
         let server = message.guild;
         let author = message.author.id;
+        const docRef = db.collection('users').doc(author);
+
         if (author.bot)
             return;
 
@@ -46,8 +47,10 @@ module.exports = {
         let sentiment = await getSentiment(message);
         let category = await getCategory(message);
 
-
-    }
+        await docRef.set({
+            sentimentTest: 5
+          });
+    },
 }
 
 
