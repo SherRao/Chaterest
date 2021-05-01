@@ -6,8 +6,8 @@ const admin = require('firebase-admin');
 const serviceAccount = require('../keys/ruhacks-2021-312420-d51b97cbf0b9.json');
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
-  });
-  
+});
+
 // Instantiates a language service client
 const client = new language.LanguageServiceClient();
 
@@ -49,7 +49,7 @@ module.exports = {
 
         await docRef.set({
             sentimentTest: 5
-          });
+        });
     },
 }
 
@@ -71,6 +71,8 @@ async function getCategory(message) {
     classification.categories.forEach(category => {
         console.log(`Name: ${category.name}, Confidence: ${category.confidence}`);
     });
+
+    return classification
 }
 
 /**
