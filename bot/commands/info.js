@@ -1,4 +1,4 @@
-const firebase = require("../../backend/functions/index");
+const main = require('../index');
 
 module.exports = {
 
@@ -21,15 +21,20 @@ module.exports = {
     },
 
     // Code executed when this slash command is used by a valid user.
-    execute: (client, logger, interaction) => {
-        let user = firebase.getUserData(interaction.member.user.id);
-        for(const category in user) {
-            console.log(`Topic: ${category.name}, Sentiment: ${category.sentiment}, Amount: ${sentiment.messageCount}`);
+    execute: async (client, logger, interaction) => {
+        const user = interaction.data.options[0];
+        const channel = client.channels.cache.get(interaction.channel_id);
+        const categories = main.firestore.collection('users').doc(user.id);
 
-        }
+        let message = "";
+        Object.keys(firebaseUser).forEach( (key) => {
+            message += `${key} : ${firebaseUser[key]}\n`;
 
+        } );
+
+        channel.send(message);
         client.api.interactions(interaction.id, interaction.token).callback.post({
-            data: { type: 4, data: {content: "Hello world!"} }
+            data: { type: 4, data: {content: message} }
 
         });
     }
