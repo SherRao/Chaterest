@@ -1,4 +1,8 @@
 //const firebase = require("../../backend/functions/index");
+const language = require('@google-cloud/language');
+
+// Instantiates a language service client
+const client = new language.LanguageServiceClient();
 
 // Stores the associated channel and role for each category.
 let categoryData = {
@@ -26,7 +30,7 @@ module.exports = {
         if(author.bot)
             return;
 
-        let category = getCategory(message);
+        // let category = getCategory(message);
         let sentiment = getSentiment(message);
         
 
@@ -50,8 +54,19 @@ function getCategory(message) {
  * 
  */
 function getSentiment(message) {
-    return 1.0;
+    const document = {
+        content: message,
+        type: 'PLAIN_TEXT',
+      };
 
+      const [result] = await client.analyzeSentiment({document: document});
+      const sentiment = result.documentSentiment;
+    
+      console.log(`Text: ${text}`);
+      console.log(`Sentiment score: ${sentiment.score}`);
+      console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
+    
+    return sentiment;
 }
 
 /**
