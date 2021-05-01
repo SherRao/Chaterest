@@ -2,9 +2,9 @@ module.exports = {
 
     // Data object that includes all the JSON to post to the Discord command endpoint.
     "data": {
-        "name": "hello",
-        "description": "Henlo.",
-        "default_permission": false, //By default, nobody has permission if set to false
+        "name": "info",
+        "description": "",
+        "default_permission": true,
 
         "permissions": [ 
 
