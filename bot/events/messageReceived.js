@@ -120,3 +120,12 @@ function notifyPassionateUsers(message, category, sentiment) {
 
 
 }
+
+/**
+ * Set role based on user sentiment
+ * on message, when sentiment exceeds threshold, automatically set role
+ */
+
+function setUserRoleForPassion() {
+
+}
