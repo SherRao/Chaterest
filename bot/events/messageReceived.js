@@ -1,21 +1,23 @@
 //const firebase = require("../../backend/functions/index");
 
-// Stores the associated channel and role for each category.
+// Mapping from google cloud category to channel and role in the discord server
 let categoryData = {
-    "anime": {
-        "channel": "",
-        "role": "",
+    "Arts & Entertainment": {
+        "channel": "movies",
+        "role": "cinephile",
 
     },
 
     "tech": {
-        "channel": "",
-        "role": "",
+        "channel": "projects n tech help",
+        "role": "techie",
 
     },
 };
 
-
+/**
+ * Executes on message sent in the discord
+ */
 module.exports = {
     name: "message",
     once: false,
@@ -23,12 +25,12 @@ module.exports = {
     execute: (client, logger, message) => {
         let server = message.guild;
         let author = message.author.id;
-        if(author.bot)
+        if (author.bot)
             return;
 
         let category = getCategory(message);
         let sentiment = getSentiment(message);
-        
+
 
     }
 }
@@ -40,8 +42,17 @@ module.exports = {
  * 
  */
 function getCategory(message) {
-    return "Dog";
+    const document = {
+        content: message.content,
+        type: 'PLAIN_TEXT',
+    };
 
+    // Detects the sentiment of the text
+    const [classification] = await client.classifyText({ document });
+    console.log('Categories:');
+    classification.categories.forEach(category => {
+        console.log(`Name: ${category.name}, Confidence: ${category.confidence}`);
+    });
 }
 
 /**
@@ -59,17 +70,17 @@ function getSentiment(message) {
  * Looks at the channel the message was sent in and checks if the channel is the correct topic channel.
  * 
  */
-function topicChannelTest(message, category, sentiment) {
-    
+function suggestTopicChannel(message, category, sentiment) {
+
 
 }
 
 /**
  * 
- * Grabs all users that talk about the topic and DMs them about it.
+ * Notifies discord users with the role associated with the category
  * 
  */
-function suggestTopic(message, category, sentiment) {
+function notifyPassionateUsers(message, category, sentiment) {
 
 
 }
