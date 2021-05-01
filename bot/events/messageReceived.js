@@ -39,6 +39,7 @@ module.exports = {
         try {
             let server = message.guild;
             let author = message.author.id;
+            
             const docRef = firestore.collection('users').doc(author);
 
             if (author.bot)
@@ -46,11 +47,18 @@ module.exports = {
 
             // let category = getCategory(message);
             let sentiment = await getSentiment(message);
-            let category = await getCategory(message);
+            // let category = await getCategory(message);
 
-            await docRef.set({
-                sentimentTest: 5
-            });
+            if (sentiment && sentiment.score > 0.8) {
+                console.log("Updating sentiment")
+                const categorySentiment = await getUserSentiment(author, "sentimentTest");
+                console.log("Previous sentiment: ", categorySentiment)
+                await docRef.set({
+                    sentimentTest: categorySentiment + 1
+                });
+            }
+
+            
         } catch (error) {
             console.error(error);
         }
@@ -87,7 +95,7 @@ async function getCategory(message) {
  */
 async function getSentiment(message) {
     const document = {
-        content: message,
+        content: message.content,
         type: 'PLAIN_TEXT',
       };
 
@@ -99,6 +107,20 @@ async function getSentiment(message) {
       console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
     
     return sentiment;
+}
+
+async function getUserSentiment(uid, category) {
+    const docRef = firestore.collection('users').doc(uid);
+
+    const userDocument = await docRef.get();
+    const user = userDocument.data();
+    console.log("Retrieved user:", user)
+
+    if (user[category]) {
+        return user[category];
+    }
+
+    else return null;
 }
 
 /**
