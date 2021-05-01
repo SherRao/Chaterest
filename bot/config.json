@@ -1,0 +1,10 @@
+{
+    "server": "838114302648254476",
+    "thresholds": {
+        "confidence": 80,
+        "passionate": 10
+    },
+    "values": {
+        "increment": 1
+    }
+}

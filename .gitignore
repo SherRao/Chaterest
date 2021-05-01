@@ -1,7 +1,7 @@
-config.json
 .project
 .classpath
 *.class
 .settings
 node_modules
 keys
+discord.json
