@@ -6,8 +6,8 @@ const admin = require('firebase-admin');
 const serviceAccount = require('');
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
-  });
-  
+});
+
 // Instantiates a language service client
 const client = new language.LanguageServiceClient();
 
@@ -36,7 +36,7 @@ module.exports = {
     name: "message",
     once: false,
 
-    execute: (client, logger, message) => {
+    execute: async (client, logger, message) => {
         let server = message.guild;
         let author = message.author.id;
         if (author.bot)
@@ -68,6 +68,8 @@ async function getCategory(message) {
     classification.categories.forEach(category => {
         console.log(`Name: ${category.name}, Confidence: ${category.confidence}`);
     });
+
+    return classification
 }
 
 /**
@@ -79,15 +81,15 @@ async function getSentiment(message) {
     const document = {
         content: message,
         type: 'PLAIN_TEXT',
-      };
+    };
 
-      const [result] = await client.analyzeSentiment({document: document});
-      const sentiment = result.documentSentiment;
-    
-      console.log(`Text: ${text}`);
-      console.log(`Sentiment score: ${sentiment.score}`);
-      console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
-    
+    const [result] = await client.analyzeSentiment({ document: document });
+    const sentiment = result.documentSentiment;
+
+    console.log(`Text: ${text}`);
+    console.log(`Sentiment score: ${sentiment.score}`);
+    console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
+
     return sentiment;
 }
 
