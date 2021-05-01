@@ -87,7 +87,7 @@ async function getSentiment(message) {
       const [result] = await client.analyzeSentiment({document: document});
       const sentiment = result.documentSentiment;
     
-      console.log(`Text: ${text}`);
+      console.log(`Text: ${message}`);
       console.log(`Sentiment score: ${sentiment.score}`);
       console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
     
