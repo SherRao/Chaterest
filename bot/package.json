@@ -4,5 +4,8 @@
     "discord.js": "^12.5.3",
     "firebase-admin": "^9.7.0",
     "js-logger": "^1.6.1"
+  },
+  "scripts": {
+    "start": "node index.js"
   }
 }
