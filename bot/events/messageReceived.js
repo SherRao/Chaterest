@@ -36,20 +36,25 @@ module.exports = {
     once: false,
     execute: async (client, logger, message) => {
 
-        let server = message.guild;
-        let author = message.author.id;
-        const docRef = firestore.collection('users').doc(author);
+        try {
+            let server = message.guild;
+            let author = message.author.id;
+            const docRef = firestore.collection('users').doc(author);
 
-        if (author.bot)
-            return;
+            if (author.bot)
+                return;
 
-        // let category = getCategory(message);
-        let sentiment = await getSentiment(message);
-        let category = await getCategory(message);
+            // let category = getCategory(message);
+            let sentiment = await getSentiment(message);
+            let category = await getCategory(message);
 
-        await docRef.set({
-            sentimentTest: 5
-        });
+            await docRef.set({
+                sentimentTest: 5
+            });
+        } catch (error) {
+            console.error(error);
+        }
+        
     },
 }
 
