@@ -1,10 +1,33 @@
 const fs = require('fs');
 const config = require('./config.json');
-const token = require('./keys/discord.json');
+const discordToken = require('./keys/discord.json');
+const firebaseToken = require('./keys/ruhacks-2021-312420-d51b97cbf0b9.json');
 
-const Discord = require('discord.js');
-const client = new Discord.Client();
 const logger = require('js-logger');
+
+// Imports for Discord
+const discordAdmin = require('discord.js');
+const discord = new discordAdmin.Client();
+
+// Imports for Google Cloud NLP
+const languageAdmin = require('@google-cloud/language');
+const language = new languageAdmin.LanguageServiceClient();
+
+// Imports for Google Firebase and Firestore
+const firebaseAdmin = require('firebase-admin');
+firebaseAdmin.initializeApp({ credential: firebaseAdmin.credential.cert(firebaseToken) });
+
+const firestore = firebaseAdmin.firestore();
+
+
+module.exports = {
+    "firestore": firestore,
+    "language": language,
+    "discord": discord,
+    "logger": logger,
+
+}
+
 
 let commands = [];  
 let events = [];
@@ -18,7 +41,7 @@ let tasks = [];
  * 
  */
 function main() {
-    client.once('ready', () => {
+    discord.once('ready', () => {
 
         initLogger();
         setPresence();
@@ -30,7 +53,7 @@ function main() {
         logger.info("Bot loaded!");
     });
 
-    client.login(token.token);
+    discord.login(discordToken.token);
 }
 
 
@@ -55,7 +78,7 @@ function initLogger() {
  */
 function setPresence() {
     logger.info("Setting presence!");
-    client.user.setPresence({
+    discord.user.setPresence({
         status: "dnd",
         activity: {
             name: "Loading bot...", 
@@ -82,7 +105,7 @@ function registerCommands() {
     for(const file of files) {
         const command = require(`./commands/${file}`);
         commands.push(command);
-        client.api.applications(client.user.id).guilds(config.server).commands.post(command);
+        discord.api.applications(discord.user.id).guilds(config.server).commands.post(command);
         
         logger.info(`Loaded command from file: commands/${file}`);
     }
@@ -106,10 +129,10 @@ function registerEvents() {
         events.push(event);
         
         if(event.once)
-		    client.once(event.name, (...args) => event.execute(client, logger, ...args));
+		    discord.once(event.name, (...args) => event.execute(discord, logger, ...args));
 
         else 
-            client.on(event.name, (...args) => event.execute(client, logger, ...args));
+            discord.on(event.name, (...args) => event.execute(discord, logger, ...args));
         
         logger.info(`Loaded event handler from file: events/${file}`);
     }  
@@ -131,7 +154,7 @@ function registerEvents() {
     for(const file of files) {
         const task = require(`./tasks/${file}`);
         tasks.push(task);
-        setInterval(task.execute, task.interval, client, logger);
+        setInterval(task.execute, task.interval, discord, logger);
 
         logger.info(`Loaded task from file: tasks/${file}`);
     }  
@@ -147,12 +170,12 @@ function registerEvents() {
  */
 function handleCommands() {
     logger.info("Registering commands with the interaction create web socket!");
-    client.ws.on('INTERACTION_CREATE', async interaction => {
+    discord.ws.on('INTERACTION_CREATE', async interaction => {
         const input = interaction.data.name.toLowerCase();
         for(const command of commands) {
             if(command.data.name == input) {
                 logger.info("Processing command: " + command.data.name);
-                command.execute(client, logger, interaction);
+                command.execute(discord, logger, interaction);
                 break;
 
             } else
