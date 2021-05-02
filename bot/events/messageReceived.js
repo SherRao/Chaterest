@@ -1,5 +1,6 @@
 //const firebase = require("../../backend/functions/index");
 
+const { TeamMember } = require("discord.js");
 const { auth } = require("firebase-admin");
 const main = require("../index");
 const language = main.language;
@@ -16,6 +17,8 @@ module.exports = {
         try {
             const server = message.guild;
             const author = message.author.id;
+            const member = message.member;
+            console.log(message.author)
             if (author.bot)
                 return;
 
@@ -23,19 +26,30 @@ module.exports = {
             let category = await getCategory(message);
 
             if (category && category.categories) {
-                const mainCategory = category.categories[0].name;
+                const mainCategory = category.categories[0]
+                const mainCategoryName = filterSubCategories(category.categories[0]);
                 let sentiment = await getSentiment(message);
 
                 if (sentiment && sentiment.score > 0) {
-                    console.log("Updating sentiment for user", author, "in category ", mainCategory)
-                    const userDoc = await docRef.get();
-                    const user = userDoc.data();
-                    console.log(user)
-                    const categorySentiment = user[mainCategory];
+                    console.log("Updating sentiment for user", author, "in category ", mainCategoryName)
+                    let userDoc = await docRef.get();
+                    let user = userDoc.data();
+
+                    //creates the user if it does not already exist and sets its data to empty
+                    if (!user) {
+                        docRef.set({})
+                        userDoc = await docRef.get();
+                        user = userDoc.data()
+                    }
+
+                    const categorySentiment = user ? user[mainCategoryName] : null;
                     await docRef.set({
                         ...user,
-                        [mainCategory]: categorySentiment ? categorySentiment + 1 : 1
+                        [mainCategoryName]: categorySentiment ? categorySentiment + 1 : 1
                     });
+                    //must happen after just in case the category isn't created till later
+                    setUserRoleForPassion(member, mainCategory, server)
+                    suggestTopicChannel(message, mainCategory)
 
                 } else {
                     console.log("Not high enough sentiment", sentiment);
@@ -104,9 +118,11 @@ async function getUser(uid) {
 
 async function getUserSentiment(uid, category) {
     const user = await getUser(uid);
+    console.log(category)
+    // console.log(filterSubCategories(category))
 
-    if (user[category]) {
-        return user[category];
+    if (user[filterSubCategories(category)]) {
+        return user[filterSubCategories(category)];
     }
 
     else return null;
@@ -139,7 +155,7 @@ function suggestTopicChannel(message, category) {
  */
 function filterSubCategories(category) {
     const ChannelMap = config.CategoriesChannelMap;
-    return Object.keys(ChannelMap).filter((name) => { return name.includes(category.name) })[0]
+    return Object.keys(ChannelMap).filter((name) => { return category.name.includes(name) })[0]
 }
 
 /**
@@ -157,6 +173,12 @@ function notifyPassionateUsers(message, category, sentiment) {
  * on message, when sentiment exceeds threshold, automatically set role
  */
 
-function setUserRoleForPassion() {
-
+async function setUserRoleForPassion(user, category, server) {
+    const sentiment = await getUserSentiment(user.id, category)
+    if (sentiment >= config.thresholds.passionate) {
+        const topic = config.CategoriesChannelMap[filterSubCategories(category)]
+        const role = server.roles.cache.get(topic.role)
+        user.roles.add(role)
+        console.log(`user: ${user.id} was given the role: ${role}`)
+    }
 }
