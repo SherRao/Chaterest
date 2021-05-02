@@ -1,7 +1,5 @@
 const fs = require('fs');
 const config = require('../config/config.json');
-const discordToken = require('./keys/discord.json');
-const firebaseToken = require('./keys/ruhacks-2021-312420-d51b97cbf0b9.json');
 
 const logger = require('js-logger');
 
@@ -15,10 +13,16 @@ const language = new languageAdmin.LanguageServiceClient();
 
 // Imports for Google Firebase and Firestore
 const firebaseAdmin = require('firebase-admin');
-firebaseAdmin.initializeApp({ credential: firebaseAdmin.credential.cert(firebaseToken) });
+
+console.log(process.env);
+
+if (process.env._ENV != 'prod') {
+    const firebaseToken = require('./keys/ruhacks-2021-312420-d51b97cbf0b9.json');
+    firebaseAdmin.initializeApp({ credential: firebaseAdmin.credential.cert(firebaseToken) });
+}
+
 
 const firestore = firebaseAdmin.firestore();
-
 
 module.exports = {
     "config": config,
@@ -54,7 +58,13 @@ function main() {
         logger.info("Bot loaded!");
     });
 
-    discord.login(discordToken.token);
+    if (process.env._DISCORD_TOKEN) {
+        discord.login(process.env._DISCORD_TOKEN);
+        console.log("asdfasdf")
+    } else {
+        const discordToken = require('./keys/discord.json');
+        discord.login(discordToken.token);
+    }
 }
 
 

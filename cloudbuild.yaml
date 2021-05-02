@@ -2,8 +2,8 @@ steps:
 - name: node
   entrypoint: npm
   args: ['install']
-  dir: /bot
+  dir: bot
 - name: node
   entrypoint: npm
   args: ['run', 'start']
-  dir: /bot
+  dir: bot
