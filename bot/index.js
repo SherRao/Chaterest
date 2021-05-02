@@ -18,7 +18,7 @@ if (process.env._ENV != 'prod') {
     firebaseAdmin.initializeApp({ credential: firebaseAdmin.credential.cert(firebaseToken) });
 } else {
     firebaseAdmin.initializeApp({
-        credential: admin.credential.applicationDefault()
+        credential: firebaseAdmin.credential.applicationDefault()
       });
       
 }
