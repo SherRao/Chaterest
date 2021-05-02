@@ -3,20 +3,7 @@
 const main = require("../index");
 const language = main.language;
 const firestore = main.firestore;
-
-// Mapping from google cloud category to channel and role in the discord server
-let categoryData = {
-    "Arts & Entertainment": {
-        "channel": "movies",
-        "role": "cinephile",
-
-    },
-
-    "tech": {
-        "channel": "projects n tech help",
-        "role": "techie",
-    },
-};
+const config = main.config;
 
 /**
  * Executes on message sent in the discord
@@ -34,23 +21,26 @@ module.exports = {
             const docRef = firestore.collection('users').doc(author);
             let category = await getCategory(message);
 
-            if (category && category.categories) {
-                const mainCategory = category.categories[0].name;
-                if (sentiment && sentiment.score > 0) {
-                    let sentiment = await getSentiment(message);
-                    console.log("Updating sentiment for user", author, "in category ", mainCategory)
-                    const categorySentiment = await getUserSentiment(author, mainCategory);
-                    await docRef.set({
-                        [mainCategory]: categorySentiment ? categorySentiment + 1 : 1
-                    });
+            //suggest a channel
+            suggestTopicChannel(message, category.categories[0])
 
-                } else {
-                    console.log("Not high enough sentiment", sentiment);
-                }
-            } else {
-                console.log("No categories found for message: ", message)
-            }
-            
+            // if (category && category.categories) {
+            //     const mainCategory = category.categories[0].name;
+            //     if (sentiment && sentiment.score > 0) {
+            //         let sentiment = await getSentiment(message);
+            //         console.log("Updating sentiment for user", author, "in category ", mainCategory)
+            //         const categorySentiment = await getUserSentiment(author, mainCategory);
+            //         await docRef.set({
+            //             [mainCategory]: categorySentiment ? categorySentiment + 1 : 1
+            //         });
+
+            //     } else {
+            //         console.log("Not high enough sentiment", sentiment);
+            //     }
+            // } else {
+            //     console.log("No categories found for message: ", message)
+            // }
+
         } catch (error) {
             console.error(error);
         }
@@ -118,11 +108,31 @@ async function getUserSentiment(uid, category) {
 /**
  * 
  * Looks at the channel the message was sent in and checks if the channel is the correct topic channel.
- * 
+ * Takes a single category
+ * Consider changing this so several messages in a row must be sent pertaining to the same 
+ * topic before sending the "consider changing channels" message
  */
-function suggestTopicChannel(message, category, sentiment) {
+function suggestTopicChannel(message, category) {
+    const categoryName = category.name;
+    const channel = message.channel;
+    const destinationChannel = config.CategoriesChannelMap[filterSubCategories(category)]
 
+    if (channel.name != destinationChannel.name) {
+        channel.send(destinationChannel.suggestionMessage)
+    }
+}
 
+/**
+ * maps subcategories to the larger category
+ * example: /Computers & Electronics/Hardware/etc -> /Computers & Electronics
+ * example: /Science/Computer Science -> /Science/Computer Science
+ * if it is not a subcategory, returns itself
+ * @param {*} category 
+ * @returns a string that is the key to a CategoriesChannelMap
+ */
+function filterSubCategories(category) {
+    const ChannelMap = config.CategoriesChannelMap;
+    return Object.keys(ChannelMap).filter((name) => { return name.includes(category.name) })[0]
 }
 
 /**
