@@ -1,4 +1,8 @@
 const profileEmbed = require('../embeds/eventReport');
+const main = require("../index");
+const firestore = main.firestore;
+const logger = main.logger;
+const config = main.config;
 
 let startTime = -1;
 let endTime = -1;
@@ -22,18 +26,19 @@ module.exports = {
     },
 
     execute: (client, logger, interaction) => {
+        console.log("hey");
         if(startTime != -1) {
             endTime = new Date().getTime();
             
             let timeDifference = getTimeDifference();
             let totalSentiment = getTotalSentiment();
-            let averageSentiment = getAverageSentiment();
+            let averageSentiment = getAverageSentiment(totalSentiment);
 
             let embed = eventEmbed;
             embed.embed.fields = [
                 { name: 'Time Period', value: timeDifference, },
-                { name: 'Total Sentiment', value: totalSentiment, },
-                { name: 'Average Sentiment', value: averageSentiment, },
+                { name: 'Total Sentiment', value: totalSentiment + " Sentiment", },
+                { name: 'Average Sentiment', value: averageSentiment + "Sentiment/Hour", },
             
             ],
             
@@ -53,9 +58,9 @@ module.exports = {
     
             });
 
+            resetSentiment();
         }
     }
-
 }
 
 
@@ -64,12 +69,47 @@ module.exports = {
  * Returns a string representation of the time difference.
  * 
  */
-function getTimeDifference() {
-    //return endTime - startTime
+function getStringTimeDifference() {
     return "1 Hour";
 
 }
 
+/**
+ * 
+ * Returns all sentiment recorded from start to stop.
+ * 
+ */
+function getTotalSentiment() {
+    let sentiment = firestore.collection('global-sentiment').doc("value");
+    return sentiment;
+
+}
+
+function getAverageSentiment(sentiment) {
+    const difference = (endTime.getTime() - startTime.getTime()) / 1000 / 60 / 60; //Get the time difference in hours
+    return difference / sentiment;
+
+}
+
+/**
+ * 
+ * Resets the sentiment stored in Firebase to 0.
+ * 
+ */
+function resetSentiment() {
+    try {
+        let docRef = firestore.collection('global-sentiment').doc("value");
+        docRef.set({value: 0})    
+    } catch (error) {
+        logger.error("Could not reset sentiment", error)
+    }
+}
+
+/**
+ * 
+ * Resets all global values to null.
+ * 
+ */
 function reset() {
     startTime = -1;
     endTime = -1;
