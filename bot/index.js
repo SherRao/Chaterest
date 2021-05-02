@@ -67,7 +67,7 @@ function main() {
         const discordToken = require('./keys/discord.json');
         discord.login(discordToken.token);
     }
-}
+} 
 
 
 function initLogger() {
