@@ -6,4 +6,7 @@ steps:
 - name: node
   entrypoint: npm
   args: ['run', 'start']
+  env:
+    - '_DISCORD_KEY=${_DISCORD_KEY}'
+    - '_ENV=${_ENV}'
   dir: bot
