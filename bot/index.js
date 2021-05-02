@@ -1,5 +1,5 @@
 const fs = require('fs');
-const config = require('../config/config.json');
+const config = require('./config.json');
 
 const logger = require('js-logger');
 
@@ -63,7 +63,6 @@ function main() {
 
     if (process.env._DISCORD_TOKEN) {
         discord.login(process.env._DISCORD_TOKEN);
-        console.log("asdfasdf")
     } else {
         const discordToken = require('./keys/discord.json');
         discord.login(discordToken.token);

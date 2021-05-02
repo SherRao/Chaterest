@@ -1,12 +1,22 @@
+# steps:
+# - name: node
+#   entrypoint: npm
+#   args: ['install']
+#   dir: bot
+# - name: node
+#   entrypoint: npm
+#   args: ['run', 'start']
+#   env:
+#     - '_DISCORD_TOKEN=${_DISCORD_TOKEN}'
+#     - '_ENV=${_ENV}'
+#   dir: bot
 steps:
-- name: node
-  entrypoint: npm
-  args: ['install']
-  dir: bot
-- name: node
-  entrypoint: npm
-  args: ['run', 'start']
-  env:
-    - '_DISCORD_TOKEN=${_DISCORD_TOKEN}'
-    - '_ENV=${_ENV}'
-  dir: bot
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'gcr.io/ruhacks-2021-312420/chaterest', 'bot' ]
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/ruhacks-2021-312420/chaterest']
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args: ['run', 'deploy', 'chaterest', '--image', 'gcr.io/ruhacks-2021-312420/chaterest', '--region', 'us-central1', '--platform', 'managed']
+images:
+- gcr.io/ruhacks-2021-312420/chaterest
