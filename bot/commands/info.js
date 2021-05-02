@@ -35,7 +35,12 @@ module.exports = {
             message += `${key} : ${user[key]}\n`;
         } );
 
-        channel.send(message);
+        if (process.env._TEST_VAR) {
+            channel.send(process.env._TEST_VAR);
+            
+        }
+
+        
         client.api.interactions(interaction.id, interaction.token).callback.post({
             data: { type: 4, data: {content: message} }
         });
