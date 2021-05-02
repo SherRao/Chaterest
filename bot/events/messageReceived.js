@@ -1,7 +1,7 @@
 //const firebase = require("../../backend/functions/index");
 
 const { TeamMember } = require("discord.js");
-const { auth } = require("firebase-admin");
+// const { auth } = require("firebase-admin");
 const main = require("../index");
 const language = main.language;
 const firestore = main.firestore;
