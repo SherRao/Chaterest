@@ -1,0 +1,36 @@
+{
+    "server": "838114302648254476",
+    "thresholds": {
+        "confidence": 80,
+        "passionate": 10
+    },
+    "values": {
+        "increment": 1
+    },
+    "CategoriesChannelMap": {
+        "/Arts & Entertainment/Music & Audio": {
+            "id": "838216035584311326",
+            "name": "jams",
+            "role": "Musicy",
+            "suggestionMessage": "Hey! Looks like you're talking about music! Check out <#838216035584311326>"
+        },
+        "/Arts & Entertainment/TV & Video": {
+            "id": "838224222194368524",
+            "name": "Movies and Shows",
+            "role": "cinephile",
+            "suggestionMessage": "Hey! Looks like you're talking about Movies! Check out <#838224222194368524>"
+        },
+        "/Computers & Electronics": {
+            "id": "838224403874971668",
+            "name": "coding-projects",
+            "role": "",
+            "suggestionMessage": "Hey! Looks like you're talking about Tech and Code! Check out <#838224403874971668>"
+        },
+        "/Science/Computer Science": {
+            "id": "838224403874971668",
+            "name": "coding-projects",
+            "role": "",
+            "suggestionMessage": "Hey! Looks like you're talking about Tech and Code! Check out <#838224403874971668>"
+        }
+    }
+}

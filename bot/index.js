@@ -1,5 +1,5 @@
 const fs = require('fs');
-const config = require('./config.json');
+const config = require('../config/config.json');
 const discordToken = require('./keys/discord.json');
 const firebaseToken = require('./keys/ruhacks-2021-312420-d51b97cbf0b9.json');
 
@@ -21,6 +21,7 @@ const firestore = firebaseAdmin.firestore();
 
 
 module.exports = {
+    "config": config,
     "firestore": firestore,
     "language": language,
     "discord": discord,
@@ -29,7 +30,7 @@ module.exports = {
 }
 
 
-let commands = [];  
+let commands = [];
 let events = [];
 let tasks = [];
 
@@ -60,10 +61,10 @@ function main() {
 function initLogger() {
     logger.useDefaults({
         defaultLevel: logger.DEBUG,
-        
+
         formatter: function (messages, context) {
             messages.unshift(`[${new Date().toUTCString()}] [${context.level.name}]: `)
-       
+
         }
     });
 }
@@ -81,12 +82,13 @@ function setPresence() {
     discord.user.setPresence({
         status: "dnd",
         activity: {
-            name: "Loading bot...", 
+            name: "Loading bot...",
             type: "WATCHING",
             url: null
-        },     
+        },
 
-    type: "WATCHING" });
+        type: "WATCHING"
+    });
 }
 
 /**
@@ -100,13 +102,13 @@ function setPresence() {
 function registerCommands() {
     logger.info("Loading commands!");
     let files = fs.readdirSync('./commands')
-                    .filter(file => file.endsWith('.js') && file != 'example.js')
-    
-    for(const file of files) {
+        .filter(file => file.endsWith('.js') && file != 'example.js')
+
+    for (const file of files) {
         const command = require(`./commands/${file}`);
         commands.push(command);
         discord.api.applications(discord.user.id).guilds(config.server).commands.post(command);
-        
+
         logger.info(`Loaded command from file: commands/${file}`);
     }
 }
@@ -122,20 +124,20 @@ function registerCommands() {
 function registerEvents() {
     logger.info("Loading event handlers!");
     let files = fs.readdirSync('./events')
-                    .filter(file => file.endsWith('.js') && file != 'example.js');
+        .filter(file => file.endsWith('.js') && file != 'example.js');
 
-    for(const file of files) {
+    for (const file of files) {
         const event = require(`./events/${file}`);
         events.push(event);
-        
-        if(event.once)
-		    discord.once(event.name, (...args) => event.execute(discord, logger, ...args));
 
-        else 
+        if (event.once)
+            discord.once(event.name, (...args) => event.execute(discord, logger, ...args));
+
+        else
             discord.on(event.name, (...args) => event.execute(discord, logger, ...args));
-        
+
         logger.info(`Loaded event handler from file: events/${file}`);
-    }  
+    }
 }
 
 /**
@@ -146,18 +148,18 @@ function registerEvents() {
  * @author Nausher Rao
  * 
  */
- function registerTasks() {
+function registerTasks() {
     logger.info("Loading tasks!");
     let files = fs.readdirSync('./tasks')
-                    .filter(file => file.endsWith('.js') && file != 'example.js');
+        .filter(file => file.endsWith('.js') && file != 'example.js');
 
-    for(const file of files) {
+    for (const file of files) {
         const task = require(`./tasks/${file}`);
         tasks.push(task);
         setInterval(task.execute, task.interval, discord, logger);
 
         logger.info(`Loaded task from file: tasks/${file}`);
-    }  
+    }
 }
 
 /**
@@ -172,15 +174,15 @@ function handleCommands() {
     logger.info("Registering commands with the interaction create web socket!");
     discord.ws.on('INTERACTION_CREATE', async interaction => {
         const input = interaction.data.name.toLowerCase();
-        for(const command of commands) {
-            if(command.data.name == input) {
+        for (const command of commands) {
+            if (command.data.name == input) {
                 logger.info("Processing command: " + command.data.name);
                 command.execute(discord, logger, interaction);
                 break;
 
             } else
                 continue;
-    
+
         }
     });
 }

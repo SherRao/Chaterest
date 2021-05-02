@@ -4,20 +4,7 @@ const { auth } = require("firebase-admin");
 const main = require("../index");
 const language = main.language;
 const firestore = main.firestore;
-
-// Mapping from google cloud category to channel and role in the discord server
-let categoryData = {
-    "Arts & Entertainment": {
-        "channel": "movies",
-        "role": "cinephile",
-
-    },
-
-    "tech": {
-        "channel": "projects n tech help",
-        "role": "techie",
-    },
-};
+const config = main.config;
 
 /**
  * Executes on message sent in the discord
@@ -56,7 +43,7 @@ module.exports = {
             } else {
                 console.log("No categories found for message: ", message)
             }
-            
+
         } catch (error) {
             console.error(error);
         }
@@ -128,11 +115,31 @@ async function getUserSentiment(uid, category) {
 /**
  * 
  * Looks at the channel the message was sent in and checks if the channel is the correct topic channel.
- * 
+ * Takes a single category
+ * Consider changing this so several messages in a row must be sent pertaining to the same 
+ * topic before sending the "consider changing channels" message
  */
-function suggestTopicChannel(message, category, sentiment) {
+function suggestTopicChannel(message, category) {
+    const categoryName = category.name;
+    const channel = message.channel;
+    const destinationChannel = config.CategoriesChannelMap[filterSubCategories(category)]
 
+    if (channel.name != destinationChannel.name) {
+        channel.send(destinationChannel.suggestionMessage)
+    }
+}
 
+/**
+ * maps subcategories to the larger category
+ * example: /Computers & Electronics/Hardware/etc -> /Computers & Electronics
+ * example: /Science/Computer Science -> /Science/Computer Science
+ * if it is not a subcategory, returns itself
+ * @param {*} category 
+ * @returns a string that is the key to a CategoriesChannelMap
+ */
+function filterSubCategories(category) {
+    const ChannelMap = config.CategoriesChannelMap;
+    return Object.keys(ChannelMap).filter((name) => { return name.includes(category.name) })[0]
 }
 
 /**
