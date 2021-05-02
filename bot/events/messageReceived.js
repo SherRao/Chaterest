@@ -8,18 +8,22 @@ const firestore = main.firestore;
 const config = main.config;
 
 /**
+ * 
  * Executes on message sent in the discord
+ * 
  */
 module.exports = {
+
     name: "message",
+    
     once: false,
+    
     execute: async (client, logger, message) => {
         try {
             const server = message.guild;
             const author = message.author
             const authorId = author.id;
             const member = message.guild.members.cache.get(authorId);
-            console.log('hey');
             if(author.bot)//|| typeof(author.bot) == "undefined")
                 return;
 
@@ -82,10 +86,12 @@ async function getCategory(message) {
     console.log('Categories:');
     classification.categories.forEach(category => {
         console.log(`Name: ${category.name}, Confidence: ${category.confidence}`);
+
     });
 
     return classification;
 }
+
 
 /**
  * 
@@ -108,6 +114,12 @@ async function getSentiment(message) {
     return sentiment;
 }
 
+
+/**
+ * 
+ * Returns the Firebase user associated with the given Discord UID.
+ * 
+ */
 async function getUser(uid) {
     const docRef = firestore.collection('users').doc(uid);
     const userDocument = await docRef.get();
@@ -116,17 +128,20 @@ async function getUser(uid) {
     return user ? user : null;
 }
 
+
+/**
+ * 
+ * Returns the sentiment for a specified user and a specific category.
+ * 
+ */
 async function getUserSentiment(uid, category) {
     const user = await getUser(uid);
-    console.log(category)
-    // console.log(filterSubCategories(category))
-
-    if (user[filterSubCategories(category)]) {
+    if (user[filterSubCategories(category)])
         return user[filterSubCategories(category)];
-    }
 
-    else return null;
+    return null;
 }
+
 
 /**
  * 
@@ -134,6 +149,7 @@ async function getUserSentiment(uid, category) {
  * Takes a single category
  * Consider changing this so several messages in a row must be sent pertaining to the same 
  * topic before sending the "consider changing channels" message
+ * 
  */
 function suggestTopicChannel(message, category) {
     const categoryName = category.name;
@@ -145,6 +161,7 @@ function suggestTopicChannel(message, category) {
     }
 }
 
+
 /**
  * maps subcategories to the larger category
  * example: /Computers & Electronics/Hardware/etc -> /Computers & Electronics
@@ -152,11 +169,13 @@ function suggestTopicChannel(message, category) {
  * if it is not a subcategory, returns itself
  * @param {*} category 
  * @returns a string that is the key to a CategoriesChannelMap
+ * 
  */
 function filterSubCategories(category) {
     const ChannelMap = config.CategoriesChannelMap;
     return Object.keys(ChannelMap).filter((name) => { return category.name.includes(name) })[0]
 }
+
 
 /**
  * 
@@ -168,9 +187,12 @@ function notifyPassionateUsers(message, category, sentiment) {
 
 }
 
+
 /**
+ * 
  * Set role based on user sentiment
  * on message, when sentiment exceeds threshold, automatically set role
+ * 
  */
 
 async function setUserRoleForPassion(user, category, server) {
