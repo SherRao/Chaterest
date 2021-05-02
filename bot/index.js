@@ -1,5 +1,6 @@
+console.log(process.env)
 const fs = require('fs');
-const config = require('../config/config.json');
+const config = require('./config.json');
 
 const logger = require('js-logger');
 
