@@ -1,6 +1,5 @@
 const fs = require('fs');
 const config = require('../config/config.json');
-const discordToken = require('./keys/discord.json');
 const firebaseToken = require('./keys/ruhacks-2021-312420-d51b97cbf0b9.json');
 
 const logger = require('js-logger');
@@ -54,7 +53,12 @@ function main() {
         logger.info("Bot loaded!");
     });
 
-    discord.login(discordToken.token);
+    if (process.env.DISCORD_TOKEN) {
+        const discordToken = require('./keys/discord.json');
+        discord.login(discordToken);
+    } else {
+        discord.login(process.env.DISCORD_TOKEN);
+    }
 }
 
 

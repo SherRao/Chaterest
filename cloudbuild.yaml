@@ -4,10 +4,6 @@ steps:
   args: ['install']
   dir: bot
 - name: node
-  args: ['pwd']
-- name: node
-  args: ['ls']
-- name: node
   entrypoint: npm
   args: ['run', 'start']
   dir: bot
