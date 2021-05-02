@@ -5,6 +5,7 @@ const { TeamMember } = require("discord.js");
 const main = require("../index");
 const language = main.language;
 const firestore = main.firestore;
+const logger = main.logger;
 const config = main.config;
 
 /**
@@ -15,16 +16,16 @@ const config = main.config;
 module.exports = {
 
     name: "message",
-    
+
     once: false,
-    
+
     execute: async (client, logger, message) => {
         try {
             const server = message.guild;
             const author = message.author
             const authorId = author.id;
             const member = message.guild.members.cache.get(authorId);
-            if(author.bot)//|| typeof(author.bot) == "undefined")
+            if (author.bot)//|| typeof(author.bot) == "undefined")
                 return;
 
             const docRef = firestore.collection('users').doc(authorId);
@@ -36,7 +37,7 @@ module.exports = {
                 let sentiment = await getSentiment(message);
 
                 if (sentiment && sentiment.score > 0) {
-                    console.log("Updating sentiment for user", authorId, "in category ", mainCategoryName)
+                    logger.info("Updating sentiment for user", authorId, "in category ", mainCategoryName)
                     let userDoc = await docRef.get();
                     let user = userDoc.data();
 
@@ -55,12 +56,13 @@ module.exports = {
                     //must happen after just in case the category isn't created till later
                     setUserRoleForPassion(member, mainCategory, server)
                     suggestTopicChannel(message, mainCategory)
+                    notifyPassionateUsers(mainCategory, server)
 
                 } else {
-                    console.log("Not high enough sentiment", sentiment);
+                    logger.warn("Not high enough sentiment", sentiment);
                 }
             } else {
-                console.log("No categories found for message: ", message)
+                logger.warn("No categories found for message: ", message)
             }
 
         } catch (error) {
@@ -68,7 +70,6 @@ module.exports = {
         }
     },
 }
-
 
 /**
  * 
@@ -83,9 +84,9 @@ async function getCategory(message) {
 
     // Detects the sentiment of the text
     const [classification] = await language.classifyText({ document });
-    console.log('Categories:');
+    // console.log('Categories:');
     classification.categories.forEach(category => {
-        console.log(`Name: ${category.name}, Confidence: ${category.confidence}`);
+        // console.log(`Name: ${category.name}, Confidence: ${category.confidence}`);
 
     });
 
@@ -107,9 +108,9 @@ async function getSentiment(message) {
     const [result] = await language.analyzeSentiment({ document: document });
     const sentiment = result.documentSentiment;
 
-    console.log(`Text: ${message}`);
-    console.log(`Sentiment score: ${sentiment.score}`);
-    console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
+    // console.log(`Text: ${message}`);
+    // console.log(`Sentiment score: ${sentiment.score}`);
+    // console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
 
     return sentiment;
 }
@@ -124,7 +125,7 @@ async function getUser(uid) {
     const docRef = firestore.collection('users').doc(uid);
     const userDocument = await docRef.get();
     const user = userDocument.data();
-    console.log("Retrieved user:", user)
+    // console.log("Retrieved user:", user)
     return user ? user : null;
 }
 
@@ -182,9 +183,21 @@ function filterSubCategories(category) {
  * Notifies discord users with the role associated with the category
  * 
  */
-function notifyPassionateUsers(message, category, sentiment) {
+function notifyPassionateUsers(category, server) {
+    const channelMap = config.CategoriesChannelMap;
+    const topic = channelMap[filterSubCategories(category)]
+    const channelId = topic.channel
 
+    const channel = server.channels.cache.get(channelId)
+    const lastMessage = channel.messages.cache.get(1);   //Since the message that we just received is the 0'th message, we gotta get the message before it, which is the 1'th message
+    const thisMessage = channel.lastMessage;            //Gets the message that was just sent
 
+    console.log(lastMessage.content);
+    console.log(thisMessage.content);
+    const timeDifference = thisMessage.createdTimestamp - lastMessage.createdTimestamp;
+
+    if (timeDifference >= config.notification_cooldown)
+        channel.send(topic.notifyDiscussionMessage)
 }
 
 
@@ -194,13 +207,12 @@ function notifyPassionateUsers(message, category, sentiment) {
  * on message, when sentiment exceeds threshold, automatically set role
  * 
  */
-
 async function setUserRoleForPassion(user, category, server) {
     const sentiment = await getUserSentiment(user.id, category)
     if (sentiment >= config.thresholds.passionate) {
         const topic = config.CategoriesChannelMap[filterSubCategories(category)]
         const role = server.roles.cache.get(topic.role)
         user.roles.add(role)
-        console.log(`user: ${user.id} was given the role: ${role}`)
+        logger.info(`user: ${user.id} was given the role: ${role}`)
     }
 }

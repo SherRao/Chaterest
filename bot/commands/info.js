@@ -34,29 +34,38 @@ module.exports = {
 
         } else {
             const docRef = main.firestore.collection('users').doc(discordUserId);
-            const userDoc = await docRef.get()
+            const userDoc = await docRef.get();
             const user = userDoc.data();
+            const avatar = discordUser.displayAvatarURL({ format: "png" });
 
             let fields = [];
-            Object.keys(user).forEach( (key) => {
-                fields.push({
-                    name: key,
-                    value: user[key],
-                    inline: false,
-
-                } );
+            let totalSentiment = 0;
+            Object.keys(user).forEach( key => {
+                totalSentiment += user[key];
 
             } );
 
+            Object.keys(user).forEach( (key) => {
+                let percent = Math.round(user[key] / totalSentiment);
+                fields.push({
+                    name:`${key.substring(1)}`,
+                    value: `${user[key]} (${percent}% of total)`,
+                    inline: true,
+
+                } );
+            } );
+
             let embed = profileEmbed;
-            embed.embed.title = "Profile -> " + discordUser.username;
-            embed.embed.fields = [].concat.apply([], fields);
-            embed.embed.image = discordUser.avatarURL({ format: "png" });
-            embed.embed.thumbnail = discordUser.avatarURL({ format: "png" });
-            channel.send(embed);
+            embed.embed.title = "Chaterest Profile -> " + discordUser.username;
+            embed.embed.description = `This is all the categories I could pull for ${discordUser.username}!`;
+            embed.embed.fields = fields;
+            embed.embed.thumbnail = { url: avatar };
             
             client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: { type: 4, data: {content: "Hello world!"} }
+                data: { type: 4, data: {
+                    embeds: [embed.embed]
+                
+                } }
             });
     
         }
