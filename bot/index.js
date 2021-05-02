@@ -1,4 +1,3 @@
-console.log(process.env)
 const fs = require('fs');
 const config = require('./config.json');
 
@@ -64,7 +63,6 @@ function main() {
 
     if (process.env._DISCORD_TOKEN) {
         discord.login(process.env._DISCORD_TOKEN);
-        console.log("asdfasdf")
     } else {
         const discordToken = require('./keys/discord.json');
         discord.login(discordToken.token);
