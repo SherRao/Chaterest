@@ -1,5 +1,6 @@
 //const firebase = require("../../backend/functions/index");
 
+const { auth } = require("firebase-admin");
 const main = require("../index");
 const language = main.language;
 const firestore = main.firestore;
@@ -36,11 +37,16 @@ module.exports = {
 
             if (category && category.categories) {
                 const mainCategory = category.categories[0].name;
+                let sentiment = await getSentiment(message);
+
                 if (sentiment && sentiment.score > 0) {
-                    let sentiment = await getSentiment(message);
                     console.log("Updating sentiment for user", author, "in category ", mainCategory)
-                    const categorySentiment = await getUserSentiment(author, mainCategory);
+                    const userDoc = await docRef.get();
+                    const user = userDoc.data();
+                    console.log(user)
+                    const categorySentiment = user[mainCategory];
                     await docRef.set({
+                        ...user,
                         [mainCategory]: categorySentiment ? categorySentiment + 1 : 1
                     });
 
@@ -101,12 +107,16 @@ async function getSentiment(message) {
     return sentiment;
 }
 
-async function getUserSentiment(uid, category) {
+async function getUser(uid) {
     const docRef = firestore.collection('users').doc(uid);
-
     const userDocument = await docRef.get();
     const user = userDocument.data();
     console.log("Retrieved user:", user)
+    return user ? user : null;
+}
+
+async function getUserSentiment(uid, category) {
+    const user = await getUser(uid);
 
     if (user[category]) {
         return user[category];
