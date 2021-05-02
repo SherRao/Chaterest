@@ -15,16 +15,16 @@ const config = main.config;
 module.exports = {
 
     name: "message",
-    
+
     once: false,
-    
+
     execute: async (client, logger, message) => {
         try {
             const server = message.guild;
             const author = message.author
             const authorId = author.id;
             const member = message.guild.members.cache.get(authorId);
-            if(author.bot)//|| typeof(author.bot) == "undefined")
+            if (author.bot)//|| typeof(author.bot) == "undefined")
                 return;
 
             const docRef = firestore.collection('users').doc(authorId);
@@ -55,6 +55,7 @@ module.exports = {
                     //must happen after just in case the category isn't created till later
                     setUserRoleForPassion(member, mainCategory, server)
                     suggestTopicChannel(message, mainCategory)
+                    notifyPassionateUsers(mainCategory, server)
 
                 } else {
                     console.log("Not high enough sentiment", sentiment);
@@ -182,8 +183,22 @@ function filterSubCategories(category) {
  * Notifies discord users with the role associated with the category
  * 
  */
-function notifyPassionateUsers(message, category, sentiment) {
+function notifyPassionateUsers(category, server) {
+    const channelMap = config.CategoriesChannelMap;
+    const topic = channelMap[filterSubCategories(category)]
+    // const roleId = server.roles.cache.get(topic.role)
+    const channelId = topic.channel
 
+    const channel = server.channels.cache.get(channelId)
+
+    channel.send(topic.notifyDiscussionMessage)
+    /**
+     * get the category of the message
+     * identify the role for that category
+     * identify the channel for that role/category
+     * send a messsage to that channel that:
+     *  @ the role here to say "hey a discussion is happening here"
+     */
 
 }
 
