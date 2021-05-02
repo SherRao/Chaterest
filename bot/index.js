@@ -24,6 +24,18 @@ if (process.env._ENV != 'prod') {
 }
 const firestore = firebaseAdmin.firestore();
 
+const http = require('http');
+
+const port = process.env.PORT || 8080
+
+const server = http.createServer((req, res) => {
+  respondToRequest(req, res);
+});
+
+server.listen(port, () => {
+  console.log(`Server running on port `, port);
+});
+
 
 module.exports = {
     "config": config,
