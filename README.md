@@ -10,7 +10,7 @@
 
 ## Contributors
 - [Nausher Rao](https://www.github.com/sherrao)<br>
-- [Nathan Laundry](https://www.github.com/tdmittens)<br>
+- [Nathan Laundry](https://www.github.com/nlaundry)<br>
 - [Ben Pearo](https://www.github.com/AustinLuu)<br>
 - [Leanne Young](https://github.com/danerkestey)<br>
 
