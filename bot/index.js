@@ -17,7 +17,10 @@ if (process.env._ENV != 'prod') {
     const firebaseToken = require('./keys/ruhacks-2021-312420-d51b97cbf0b9.json');
     firebaseAdmin.initializeApp({ credential: firebaseAdmin.credential.cert(firebaseToken) });
 } else {
-    firebaseAdmin.initializeApp();
+    firebaseAdmin.initializeApp({
+        credential: firebaseAdmin.credential.applicationDefault()
+      });
+      
 }
 const firestore = firebaseAdmin.firestore();
 
