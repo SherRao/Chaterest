@@ -12,7 +12,7 @@
 #   dir: bot
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'gcr.io/ruhacks-2021-312420/chaterest', '.' ]
+  args: [ 'build', '-t', 'gcr.io/ruhacks-2021-312420/chaterest', 'bot' ]
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/ruhacks-2021-312420/chaterest']
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
