@@ -1,6 +1,6 @@
 <h1 align="center">
   Chaterest
-  <a href=""><img src="logo.png" width="250"/></a>
+  <a href=""><img src="icon.png" width="250"/></a>
 </h1>
 
 <blockquote align="center">
