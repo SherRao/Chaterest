@@ -29,11 +29,14 @@ const http = require('http');
 const port = process.env.PORT || 8080
 
 const server = http.createServer((req, res) => {
-  respondToRequest(req, res);
+  // Set the response HTTP header with HTTP status and Content type
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    // Send the response body "Hello World"
+    res.end('Just for testing purposes\n');
 });
 
 server.listen(port, () => {
-  console.log(`Server running on port `, port);
+  console.log(`Server listening on port `, port);
 });
 
 
@@ -202,7 +205,7 @@ function handleCommands() {
     discord.ws.on('INTERACTION_CREATE', async interaction => {
         const input = interaction.data.name.toLowerCase();
         for (const command of commands) {
-            if (command.data.name == input) {
+            if (command.data.name.toLowerCase() == input) {
                 logger.info("Processing command: " + command.data.name);
                 command.execute(discord, logger, interaction);
                 break;

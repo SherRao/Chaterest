@@ -2,7 +2,7 @@ module.exports = {
 
     embed: {
         color: 0x0099ff,
-        title: 'Chaterest Profile - Username',
+        title: 'Chaterest User Comparison',
         
         author: {
             name: 'Chaterest',
@@ -10,7 +10,7 @@ module.exports = {
         },
 
         footer: {
-            text: 'Profile generated at ' + new Date().toDateString(),
+            text: 'Report generated at ' + new Date().toDateString(),
 
         }
     }

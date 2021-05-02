@@ -6,8 +6,7 @@ module.exports = {
         
         author: {
             name: 'Chaterest',
-            icon_url: 'https://github.com/SherRao/ToxBot/icon.png',
-            url: 'https://github.com/SherRao/ToxBot/',
+            url: 'https://github.com/SherRao/Chaterest/',
         },
 
         footer: {

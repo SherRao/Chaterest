@@ -21,48 +21,61 @@ module.exports = {
     },
 }
 
+/** */
 async function onMessage(client, logger, message) {
     try {
         const server = message.guild;
         const author = message.author
         const member = message.guild.members.cache.get(author.id);
 
-        if (author.bot)
-            return;
+        if(!author.bot) {
+            let category = await getCategory(message);
 
-        let category = await getCategory(message);
+            //if we had enough tokens to get valid categories, proceed
+            if (category && category.categories) {
+                //identify the most likely category
+                const mainCategory = category.categories[0]
+                const mainCategoryName = filterSubCategories(category.categories[0]);
+                let sentiment = await getSentiment(message);
 
-        //if we had enough tokens to get valid categories, proceed
-        if (category && category.categories) {
-            //identify the most likely category
-            const mainCategory = category.categories[0]
-            const mainCategoryName = filterSubCategories(category.categories[0]);
-            let sentiment = await getSentiment(message);
+                //if that sentiment is positive, proceed
+                if (sentiment && sentiment.score > 0) {
+                    logger.info("Updating sentiment for user", author.id, "in category ", mainCategoryName)
+                    
+                    await createUserIfDoesNotExist(author);
+                    await incrementUserCategorySentiment(author, mainCategory);
+                    await setUserRoleForPassion(member, mainCategory, server);
+                    await incrementGlobalSentiment();
 
-            //if that sentiment is positive, proceed
-            if (sentiment && sentiment.score > 0) {
-                logger.info("Updating sentiment for user", author.id, "in category ", mainCategoryName)
-                await createUserIfDoesNotExist(author);
-                await incrementUserCategorySentiment(author, mainCategory);
-                await setUserRoleForPassion(member, mainCategory, server)
-                suggestTopicChannel(message, mainCategory)
-                notifyPassionateUsers(mainCategory, server)
+                    await notifyPassionateUsers(mainCategory, server, message.channel);
+                    suggestTopicChannel(message, mainCategory);
 
+                } else {
+                    logger.warn("Not high enough sentiment", sentiment);
+                }
             } else {
-                logger.warn("Not high enough sentiment", sentiment);
+                logger.warn("No categories found for message: ", message);
             }
-        } else {
-            logger.warn("No categories found for message: ", message)
         }
 
     } catch (error) {
-        logger.warn(error);
+        logger.error("Either the category couldn't be found OR the sentiment couldnt be found or something");
     }
+}
+
+async function incrementGlobalSentiment() {
+    const docRef = firestore.collection('global-sentiment').doc('value');
+    const valueDoc = await docRef.get();
+    const value = valueDoc.data().value;
+
+    await docRef.set({
+        "value": value ? value + 1 : 1
+    });
 }
 
 /**
  * 
- * @param {author of a message, differs from user} discordAuthor 
+ * @param discordAuthor author of a message, differs from user 
  * returns either the existing user or the newly created user
  */
 async function createUserIfDoesNotExist(discordAuthor) {
@@ -82,12 +95,18 @@ async function incrementUserCategorySentiment(discordAuthor, category) {
     const docRef = firestore.collection('users').doc(discordAuthor.id);
     const categoryName = filterSubCategories(category)
     let user = await getFirestoreUserData(discordAuthor)
-    console.log(user)
-    const categorySentiment = user ? user[categoryName] : null;
-    await docRef.set({
-        ...user,
-        [categoryName]: categorySentiment ? categorySentiment + 1 : 1
-    });
+
+    const categorySentiment = user[categoryName];
+
+    if (user && categoryName) {
+        await docRef.set({
+            ...user,
+            [categoryName]: categorySentiment ? categorySentiment + 1 : 1
+        });
+    } else {
+        logger.error("Could not increment sentiment for category ", category)
+    }
+    
 
 }
 
@@ -111,7 +130,6 @@ async function getCategory(message) {
     };
 
     const [classification] = await language.classifyText({ document });
-
     return classification;
 }
 
@@ -172,10 +190,6 @@ async function getUserSentiment(uid, category) {
 function suggestTopicChannel(message, category) {
     const channel = message.channel;
     const destinationChannel = config.CategoriesChannelMap[filterSubCategories(category)];
-
-    console.log(channel.name)
-    console.log(destinationChannel.name)
-
     if (channel.name != destinationChannel.name) {
         channel.send(destinationChannel.suggestionMessage);
     }
@@ -203,20 +217,39 @@ function filterSubCategories(category) {
  * Notifies discord users with the role associated with the category
  * 
  */
-async function notifyPassionateUsers(category, server) {
+async function notifyPassionateUsers(category, server, talkingChannel) {
+    const channelMap = config.CategoriesChannelMap;
+    const topic = channelMap[filterSubCategories(category)];
+
+    const thisMessageId = talkingChannel.lastMessageID;                                                      //Gets the message that was just sent
+    const thisMessage = talkingChannel.messages.cache.get(thisMessageId);
+
+    const lastMessageFetch = await talkingChannel.messages.fetch({ limit: 1, before: thisMessageId });  //Since the message that we just received is the 0'th message, we gotta get the message before it, which is the 1'th message
+    const lastMessageId = lastMessageFetch.keys().next().value;
+    const lastMessage = await talkingChannel.messages.fetch(lastMessageId);
+
+    const topicChannelId = topic.channel;
+    const topicChannel = server.channels.cache.get(topicChannelId);
+
+    const timeDifference = thisMessage.createdTimestamp - lastMessage.createdTimestamp;
+    if (timeDifference >= config.notification_cooldown)
+        topicChannel.send(topic.notifyDiscussionMessage);
+
+}
+
+
+/**
+ * 
+ * Notifies discord users with the role associated with the category
+ * 
+ */
+ function notifyPassionateUsersWithoutTimer(category, server) {
     const channelMap = config.CategoriesChannelMap;
     const topic = channelMap[filterSubCategories(category)];
     const channelId = topic.channel;
 
     const channel = server.channels.cache.get(channelId);
-    const thisMessage = channel.lastMessage;                                                      //Gets the message that was just sent
-    const lastMessageFetch = await channel.messages.fetch({ limit: 1, before: thisMessage.id });    //Since the message that we just received is the 0'th message, we gotta get the message before it, which is the 1'th message
-    const lastMessageId = lastMessageFetch.keys().next().value;
-    const lastMessage = await channel.messages.fetch(lastMessageId);
-
-    const timeDifference = thisMessage.createdTimestamp - lastMessage.createdTimestamp;
-    if (timeDifference >= config.notification_cooldown)
-        channel.send(topic.notifyDiscussionMessage);
+    channel.send(topic.notifyDiscussionMessage);
 
 }
 

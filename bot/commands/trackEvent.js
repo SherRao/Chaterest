@@ -1,16 +1,18 @@
 const profileEmbed = require('../embeds/eventReport');
 const main = require("../index");
+const timeUtil = require("../util/timeUtils");
+
 const firestore = main.firestore;
 const logger = main.logger;
 const config = main.config;
 
-let startTime = -1;
-let endTime = -1;
+let startTime = null;
+let endTime = null;
 let eventName = "an upcoming event";
 
 module.exports = {
     "data": {
-        "name": "trackEvent",
+        "name": "trackevent",
         "description": "Used to gather the global sentiment of members over time",
         "default_permission": true,
 
@@ -19,26 +21,28 @@ module.exports = {
             {
                 "name": "name",
                 "description": "The name of the event.",
-                "type": 1,
+                "type": 3,
                 "required": false,
             }, 
         ],
     },
 
-    execute: (client, logger, interaction) => {
-        console.log("hey");
-        if(startTime != -1) {
-            endTime = new Date().getTime();
+    execute: async (client, logger, interaction) => {
+        if(startTime != null) {
+            logger.info("Stopping global sentiment tracking!");
+            endTime = new Date();
             
-            let timeDifference = getTimeDifference();
-            let totalSentiment = getTotalSentiment();
+            let timeDifference = timeUtil.getDuration(startTime, endTime);
+            let totalSentiment = await getTotalSentiment();
             let averageSentiment = getAverageSentiment(totalSentiment);
 
-            let embed = eventEmbed;
+            let embed = profileEmbed;
+            embed.embed.author.icon_url = client.user.displayAvatarURL({ format: "png" });
             embed.embed.fields = [
-                { name: 'Time Period', value: timeDifference, },
+                { name: 'Event Name:', value: eventName, },
+                { name: 'Time Period (HH:MM:SS)', value: timeDifference.toString(), },
                 { name: 'Total Sentiment', value: totalSentiment + " Sentiment", },
-                { name: 'Average Sentiment', value: averageSentiment + "Sentiment/Hour", },
+                { name: 'Average Sentiment', value: averageSentiment + " Sentiment/Hour", },
             
             ],
             
@@ -52,11 +56,15 @@ module.exports = {
             reset();
 
         } else {
-            startTime = new Date().getTime();
+            logger.info("Starting to track global sentiment!");
+            startTime = new Date();
             client.api.interactions(interaction.id, interaction.token).callback.post({
                 data: { type: 4, data: {content: `Started tracking sentiment globally for ${eventName}!`} }
     
             });
+
+            if(interaction.data.options.length > 0)
+                eventName = interaction.data.options[0].value;
 
             resetSentiment();
         }
@@ -66,28 +74,21 @@ module.exports = {
 
 /**
  * 
- * Returns a string representation of the time difference.
- * 
- */
-function getStringTimeDifference() {
-    return "1 Hour";
-
-}
-
-/**
- * 
  * Returns all sentiment recorded from start to stop.
  * 
  */
-function getTotalSentiment() {
-    let sentiment = firestore.collection('global-sentiment').doc("value");
-    return sentiment;
+async function getTotalSentiment() {
+    let docRef = firestore.collection('global-sentiment').doc("value");
+    let doc = await docRef.get();
+    let value = doc.data().value;
+    
+    return value;
 
 }
 
 function getAverageSentiment(sentiment) {
-    const difference = (endTime.getTime() - startTime.getTime()) / 1000 / 60 / 60; //Get the time difference in hours
-    return difference / sentiment;
+    const hours = (endTime.getTime() - startTime.getTime()) / 1000 / 60 / 60; //Get the time difference in hours
+    return Math.round(sentiment / hours);
 
 }
 
@@ -99,9 +100,10 @@ function getAverageSentiment(sentiment) {
 function resetSentiment() {
     try {
         let docRef = firestore.collection('global-sentiment').doc("value");
-        docRef.set({value: 0})    
+        docRef.set({value: 0});
+
     } catch (error) {
-        logger.error("Could not reset sentiment", error)
+        logger.error("Could not reset sentiment", error);
     }
 }
 
@@ -111,8 +113,8 @@ function resetSentiment() {
  * 
  */
 function reset() {
-    startTime = -1;
-    endTime = -1;
+    startTime = null;
+    endTime = null;
     eventName = "an upcoming event";
 
 }
