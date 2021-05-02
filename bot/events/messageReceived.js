@@ -16,13 +16,14 @@ module.exports = {
     execute: async (client, logger, message) => {
         try {
             const server = message.guild;
-            const author = message.author.id;
-            const member = message.member;
-            console.log(message.author)
-            if (author.bot)
+            const author = message.author
+            const authorId = author.id;
+            const member = message.guild.members.cache.get(authorId);
+            console.log('hey');
+            if(author.bot)//|| typeof(author.bot) == "undefined")
                 return;
 
-            const docRef = firestore.collection('users').doc(author);
+            const docRef = firestore.collection('users').doc(authorId);
             let category = await getCategory(message);
 
             if (category && category.categories) {
@@ -31,7 +32,7 @@ module.exports = {
                 let sentiment = await getSentiment(message);
 
                 if (sentiment && sentiment.score > 0) {
-                    console.log("Updating sentiment for user", author, "in category ", mainCategoryName)
+                    console.log("Updating sentiment for user", authorId, "in category ", mainCategoryName)
                     let userDoc = await docRef.get();
                     let user = userDoc.data();
 
@@ -61,7 +62,6 @@ module.exports = {
         } catch (error) {
             console.error(error);
         }
-
     },
 }
 
@@ -84,7 +84,7 @@ async function getCategory(message) {
         console.log(`Name: ${category.name}, Confidence: ${category.confidence}`);
     });
 
-    return classification
+    return classification;
 }
 
 /**

@@ -13,22 +13,19 @@ const language = new languageAdmin.LanguageServiceClient();
 
 // Imports for Google Firebase and Firestore
 const firebaseAdmin = require('firebase-admin');
-
-console.log(process.env);
-
 if (process.env._ENV != 'prod') {
     const firebaseToken = require('./keys/ruhacks-2021-312420-d51b97cbf0b9.json');
     firebaseAdmin.initializeApp({ credential: firebaseAdmin.credential.cert(firebaseToken) });
 }
-
-
 const firestore = firebaseAdmin.firestore();
+
 
 module.exports = {
     "config": config,
     "firestore": firestore,
     "language": language,
     "discord": discord,
+    "discordAdmin": discordAdmin,
     "logger": logger,
 
 }
@@ -54,7 +51,8 @@ function main() {
         registerEvents();
         registerTasks();
         handleCommands();
-
+        fixArraysFlat();
+        
         logger.info("Bot loaded!");
     });
 
@@ -169,7 +167,8 @@ function registerTasks() {
         setInterval(task.execute, task.interval, discord, logger);
 
         logger.info(`Loaded task from file: tasks/${file}`);
-    }
+    } 
+
 }
 
 /**
@@ -195,6 +194,17 @@ function handleCommands() {
 
         }
     });
+}
+
+function fixArraysFlat() {
+    Object.defineProperty(Array.prototype, 'flat', {
+        value: function(depth = 1) {
+          return this.reduce(function (flat, toFlatten) {
+            return flat.concat((Array.isArray(toFlatten) && (depth>1)) ? toFlatten.flat(depth-1) : toFlatten);
+          }, []);
+        }
+    });
+
 }
 
 main();

@@ -1,4 +1,5 @@
 const main = require('../index');
+const profileEmbed = require('../embeds/profile');
 
 module.exports = {
 
@@ -20,30 +21,45 @@ module.exports = {
         ],
     },
 
-    // Code executed when this slash command is used by a valid user.
-    execute: async (client, logger, interaction) => {
-        const discordUser = interaction.data.options[0];
+    execute: async (client, logger, interaction) => {77
+        const discordUserId = interaction.data.options[0].value;
+        const discordUser = client.users.cache.get(discordUserId);
         const channel = client.channels.cache.get(interaction.channel_id);
-        console.log(discordUser);
-        const docRef = main.firestore.collection('users').doc(discordUser.value);
-        const userDoc = await docRef.get()
-        const user = userDoc.data();
-        console.log("user data:", user)
 
-        let message = "";
-        Object.keys(user).forEach( (key) => {
-            message += `${key} : ${user[key]}\n`;
-        } );
-
-        if (process.env._TEST_VAR) {
-            channel.send(process.env._TEST_VAR);
+        if(discordUser.bot || typeof(discordUser.bot) == "undefined") {
+            client.api.interactions(interaction.id, interaction.token).callback.post({
+                data: { type: 4, data: {content: "Cannot get information for a bot!"} }
             
-        }
+            });
 
-        
-        client.api.interactions(interaction.id, interaction.token).callback.post({
-            data: { type: 4, data: {content: message} }
-        });
+        } else {
+            const docRef = main.firestore.collection('users').doc(discordUserId);
+            const userDoc = await docRef.get()
+            const user = userDoc.data();
+
+            let fields = [];
+            Object.keys(user).forEach( (key) => {
+                fields.push({
+                    name: key,
+                    value: user[key],
+                    inline: false,
+
+                } );
+
+            } );
+
+            let embed = profileEmbed;
+            embed.embed.title = "Profile -> " + discordUser.username;
+            embed.embed.fields = [].concat.apply([], fields);
+            embed.embed.image = discordUser.avatarURL({ format: "png" });
+            embed.embed.thumbnail = discordUser.avatarURL({ format: "png" });
+            channel.send(embed);
+            
+            client.api.interactions(interaction.id, interaction.token).callback.post({
+                data: { type: 4, data: {content: "Hello world!"} }
+            });
+    
+        }
     }
 
 }
