@@ -1,0 +1,7 @@
+steps:
+- name: npm install
+  entrypoint: npm
+  args: ['install']
+- name: run
+  entrypoint: npm
+  args: ['start']
