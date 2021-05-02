@@ -2,7 +2,7 @@ steps:
 - name: node
   entrypoint: npm
   args: ['install']
-  dir: /bot
+  dir: bot
 - name: node
   args: ['pwd']
 - name: node
@@ -10,4 +10,4 @@ steps:
 - name: node
   entrypoint: npm
   args: ['run', 'start']
-  dir: /bot
+  dir: bot
