@@ -171,13 +171,13 @@ async function getUserSentiment(uid, category) {
  */
 function suggestTopicChannel(message, category) {
     const channel = message.channel;
-    const destinationChannel = config.CategoriesChannelMap[filterSubCategories(category)]
+    const destinationChannel = config.CategoriesChannelMap[filterSubCategories(category)];
 
     console.log(channel.name)
     console.log(destinationChannel.name)
 
     if (channel.name != destinationChannel.name) {
-        channel.send(destinationChannel.suggestionMessage)
+        channel.send(destinationChannel.suggestionMessage);
     }
 }
 
@@ -194,6 +194,7 @@ function suggestTopicChannel(message, category) {
 function filterSubCategories(category) {
     const ChannelMap = config.CategoriesChannelMap;
     return Object.keys(ChannelMap).filter((name) => { return category.name.includes(name) })[0]
+
 }
 
 
@@ -202,21 +203,21 @@ function filterSubCategories(category) {
  * Notifies discord users with the role associated with the category
  * 
  */
-function notifyPassionateUsers(category, server) {
+async function notifyPassionateUsers(category, server) {
     const channelMap = config.CategoriesChannelMap;
-    const topic = channelMap[filterSubCategories(category)]
-    const channelId = topic.channel
+    const topic = channelMap[filterSubCategories(category)];
+    const channelId = topic.channel;
 
-    const channel = server.channels.cache.get(channelId)
-    const lastMessage = channel.messages.cache.get(1);   //Since the message that we just received is the 0'th message, we gotta get the message before it, which is the 1'th message
-    const thisMessage = channel.lastMessage;            //Gets the message that was just sent
+    const channel = server.channels.cache.get(channelId);
+    const thisMessage = channel.lastMessage;                                                      //Gets the message that was just sent
+    const lastMessageFetch = await channel.messages.fetch({ limit: 1, before: thisMessage.id });    //Since the message that we just received is the 0'th message, we gotta get the message before it, which is the 1'th message
+    const lastMessageId = lastMessageFetch.keys().next().value;
+    const lastMessage = await channel.messages.fetch(lastMessageId);
 
-    console.log(lastMessage.content);
-    console.log(thisMessage.content);
     const timeDifference = thisMessage.createdTimestamp - lastMessage.createdTimestamp;
-
     if (timeDifference >= config.notification_cooldown)
-        channel.send(topic.notifyDiscussionMessage)
+        channel.send(topic.notifyDiscussionMessage);
+
 }
 
 
@@ -227,11 +228,12 @@ function notifyPassionateUsers(category, server) {
  * 
  */
 async function setUserRoleForPassion(user, category, server) {
-    const sentiment = await getUserSentiment(user.id, category)
+    const sentiment = await getUserSentiment(user.id, category);
     if (sentiment >= config.thresholds.passionate) {
-        const topic = config.CategoriesChannelMap[filterSubCategories(category)]
-        const role = server.roles.cache.get(topic.role)
-        user.roles.add(role)
-        logger.info(`user: ${user.id} was given the role: ${role}`)
+        const topic = config.CategoriesChannelMap[filterSubCategories(category)];
+        const role = server.roles.cache.get(topic.role);
+        user.roles.add(role);
+
+        logger.info(`user: ${user.id} was given the role: ${role}`);
     }
 }
