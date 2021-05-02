@@ -53,11 +53,11 @@ function main() {
         logger.info("Bot loaded!");
     });
 
-    if (process.env.DISCORD_TOKEN) {
+    if (process.env._DISCORD_TOKEN) {
         const discordToken = require('./keys/discord.json');
         discord.login(discordToken);
     } else {
-        discord.login(process.env.DISCORD_TOKEN);
+        discord.login(process.env._DISCORD_TOKEN);
     }
 }
 
