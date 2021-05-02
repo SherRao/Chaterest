@@ -17,6 +17,6 @@ steps:
   args: ['push', 'gcr.io/ruhacks-2021-312420/chaterest']
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: gcloud
-  args: ['run', 'deploy', 'SERVICE-NAME', '--image', 'gcr.io/ruhacks-2021-312420/chaterest', '--region', 'us-central1', '--platform', 'managed']
+  args: ['run', 'deploy', 'chaterest', '--image', 'gcr.io/ruhacks-2021-312420/chaterest', '--region', 'us-central1', '--platform', 'managed']
 images:
 - gcr.io/ruhacks-2021-312420/chaterest
