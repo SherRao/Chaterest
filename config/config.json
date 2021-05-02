@@ -40,5 +40,7 @@
             "suggestionMessage": "Hey! Looks like you're talking about Tech and Code! Check out <#838224403874971668>",
             "notifyDiscussionMessage": "Hey <@&838236316252504124>, get in on the action!"
         }
-    }
+    },
+
+    "notification_cooldown": 10000
 }
