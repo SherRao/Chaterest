@@ -63,9 +63,11 @@ function main() {
 
     if (process.env._DISCORD_TOKEN) {
         discord.login(process.env._DISCORD_TOKEN);
+
     } else {
         const discordToken = require('./keys/discord.json');
         discord.login(discordToken.token);
+        
     }
 } 
 
