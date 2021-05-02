@@ -29,11 +29,14 @@ const http = require('http');
 const port = process.env.PORT || 8080
 
 const server = http.createServer((req, res) => {
-  respondToRequest(req, res);
+  // Set the response HTTP header with HTTP status and Content type
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    // Send the response body "Hello World"
+    res.end('Just for testing purposes\n');
 });
 
 server.listen(port, () => {
-  console.log(`Server running on port `, port);
+  console.log(`Server listening on port `, port);
 });
 
 
