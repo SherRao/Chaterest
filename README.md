@@ -10,9 +10,9 @@
 
 ## Contributors
 - [Nausher Rao](https://www.github.com/sherrao)<br>
-- [Nathan Laundry](https://www.github.com/nlaundry)<br>
-- [Ben Pearo](https://www.github.com/AustinLuu)<br>
-- [Leanne Young](https://github.com/danerkestey)<br>
+- [Nathan Laundry](https://github.com/NLaundry)<br>
+- [Ben Pearo](https://github.com/BenPearo)<br>
+- [Leanne Young](https://github.com/leanne-young)<br>
 
 ## Technologies
 You can find our devpost submission [here](https://devpost.com/software/karaokebot).
