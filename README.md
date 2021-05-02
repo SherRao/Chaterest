@@ -5,7 +5,7 @@
 </h1>
 
 <blockquote align="center">
-  <em>Chaterest</em>is a bot that does shit.
+  <em>Chaterest</em> is a bot that automates discussion moderation, and measures user interests.
 </blockquote>
 
 ## Contributors
