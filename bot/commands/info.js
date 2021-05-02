@@ -22,20 +22,27 @@ module.exports = {
 
     // Code executed when this slash command is used by a valid user.
     execute: async (client, logger, interaction) => {
-        const user = interaction.data.options[0];
+        const discordUser = interaction.data.options[0];
         const channel = client.channels.cache.get(interaction.channel_id);
-        const categories = main.firestore.collection('users').doc(user.id);
+        console.log(discordUser);
+        const docRef = main.firestore.collection('users').doc(discordUser.value);
+        const userDoc = await docRef.get()
+        const user = userDoc.data();
+        console.log("user data:", user)
 
         let message = "";
-        Object.keys(firebaseUser).forEach( (key) => {
-            message += `${key} : ${firebaseUser[key]}\n`;
-
+        Object.keys(user).forEach( (key) => {
+            message += `${key} : ${user[key]}\n`;
         } );
 
-        channel.send(message);
+        if (process.env._TEST_VAR) {
+            channel.send(process.env._TEST_VAR);
+            
+        }
+
+        
         client.api.interactions(interaction.id, interaction.token).callback.post({
             data: { type: 4, data: {content: message} }
-
         });
     }
 
