@@ -4,4 +4,4 @@ steps:
   args: ['install']
 - name: node
   entrypoint: npm
-  args: ['start']
+  args: ['run', 'start']
