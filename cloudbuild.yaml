@@ -10,13 +10,36 @@
 #     - '_DISCORD_TOKEN=${_DISCORD_TOKEN}'
 #     - '_ENV=${_ENV}'
 #   dir: bot
-steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'gcr.io/ruhacks-2021-312420/chaterest', 'bot' ]
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/ruhacks-2021-312420/chaterest']
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  entrypoint: gcloud
-  args: ['run', 'deploy', 'chaterest', '--image', 'gcr.io/ruhacks-2021-312420/chaterest', '--region', 'us-central1', '--platform', 'managed']
-images:
-- gcr.io/ruhacks-2021-312420/chaterest
+# steps:
+# - name: 'gcr.io/cloud-builders/docker'
+#   args: [ 'build', '-t', 'gcr.io/ruhacks-2021-312420/chaterest', 'bot' ]
+# - name: 'gcr.io/cloud-builders/docker'
+#   args: ['push', 'gcr.io/ruhacks-2021-312420/chaterest']
+# - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+#   entrypoint: gcloud
+#   args: ['run', 'deploy', 'chaterest', '--image', 'gcr.io/ruhacks-2021-312420/chaterest', '--region', 'us-central1', '--platform', 'managed']
+# images:
+# - gcr.io/ruhacks-2021-312420/chaterest
+
+ steps:
+ # Build the container image
+ - name: 'gcr.io/cloud-builders/docker'
+   args: ['build', '-t', 'gcr.io/$PROJECT_ID/chaterest:$COMMIT_SHA', '.']
+ # Push the container image to Container Registry
+ - name: 'gcr.io/cloud-builders/docker'
+   args: ['push', 'gcr.io/$PROJECT_ID/chaterest:$COMMIT_SHA']
+ # Deploy container image to Cloud Run
+ - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+   entrypoint: gcloud
+   args:
+   - 'run'
+   - 'deploy'
+   - 'chaterest'
+   - '--image'
+   - 'gcr.io/$PROJECT_ID/chaterest:$COMMIT_SHA'
+   - '--region'
+   - 'us-central1'
+   - '--platform'
+   - 'managed'
+ images:
+ - 'gcr.io/$PROJECT_ID/chaterest:$COMMIT_SHA'
