@@ -18,7 +18,7 @@
         },
         "/Arts & Entertainment/TV & Video": {
             "id": "838224222194368524",
-            "name": "Movies and Shows",
+            "name": "movies-and-shows",
             "role": "838236425232580659",
             "channel": "838224222194368524",
             "suggestionMessage": "Hey! Looks like you're talking about Movies! Check out <#838224222194368524>",
@@ -41,6 +41,5 @@
             "notifyDiscussionMessage": "Hey <@&838236316252504124>, get in on the action!"
         }
     },
-
     "notification_cooldown": 10000
 }
