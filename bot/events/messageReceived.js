@@ -32,15 +32,14 @@ module.exports = {
                 return;
 
             const docRef = firestore.collection('users').doc(author);
-            let sentiment = await getSentiment(message);
             let category = await getCategory(message);
 
             if (category && category.categories) {
                 const mainCategory = category.categories[0].name;
                 if (sentiment && sentiment.score > 0) {
+                    let sentiment = await getSentiment(message);
                     console.log("Updating sentiment for user", author, "in category ", mainCategory)
                     const categorySentiment = await getUserSentiment(author, mainCategory);
-                    console.log("Previous sentiment: ", categorySentiment)
                     await docRef.set({
                         [mainCategory]: categorySentiment ? categorySentiment + 1 : 1
                     });
