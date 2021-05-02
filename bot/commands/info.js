@@ -40,23 +40,27 @@ module.exports = {
             let fields = [];
             Object.keys(user).forEach( (key) => {
                 fields.push({
-                    name: key,
-                    value: user[key],
-                    inline: false,
+                    name:`${key.substring(1)}`,
+                    value: `${user[key]} (10% of total)`,
+                    inline: true,
 
                 } );
 
             } );
 
+            let avatar = discordUser.displayAvatarURL({ format: "png" })
+
             let embed = profileEmbed;
-            embed.embed.title = "Profile -> " + discordUser.username;
-            embed.embed.fields = [].concat.apply([], fields);
-            embed.embed.image = discordUser.avatarURL({ format: "png" });
-            embed.embed.thumbnail = discordUser.avatarURL({ format: "png" });
-            channel.send(embed);
+            embed.embed.title = "Chaterest Profile -> " + discordUser.username;
+            embed.embed.description = `This is all the information I could pull for ${discordUser.username}!`;
+            embed.embed.fields = fields;
+            embed.embed.thumbnail = { url: avatar };
             
             client.api.interactions(interaction.id, interaction.token).callback.post({
-                data: { type: 4, data: {content: "Hello world!"} }
+                data: { type: 4, data: {
+                    embeds: [embed.embed]
+                
+                } }
             });
     
         }
