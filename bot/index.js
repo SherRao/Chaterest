@@ -1,6 +1,5 @@
 const fs = require('fs');
 const config = require('../config/config.json');
-const firebaseToken = require('./keys/ruhacks-2021-312420-d51b97cbf0b9.json');
 
 const logger = require('js-logger');
 
@@ -14,10 +13,14 @@ const language = new languageAdmin.LanguageServiceClient();
 
 // Imports for Google Firebase and Firestore
 const firebaseAdmin = require('firebase-admin');
-firebaseAdmin.initializeApp({ credential: firebaseAdmin.credential.cert(firebaseToken) });
+
+if (process.env._ENV != 'prod') {
+    const firebaseToken = require('./keys/ruhacks-2021-312420-d51b97cbf0b9.json');
+    firebaseAdmin.initializeApp({ credential: firebaseAdmin.credential.cert(firebaseToken) });
+}
+
 
 const firestore = firebaseAdmin.firestore();
-
 
 module.exports = {
     "config": config,
