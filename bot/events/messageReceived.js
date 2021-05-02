@@ -70,7 +70,6 @@ module.exports = {
     },
 }
 
-
 /**
  * 
  * Looks at the message sent and updates the category for other functions to use.
@@ -186,20 +185,11 @@ function filterSubCategories(category) {
 function notifyPassionateUsers(category, server) {
     const channelMap = config.CategoriesChannelMap;
     const topic = channelMap[filterSubCategories(category)]
-    // const roleId = server.roles.cache.get(topic.role)
     const channelId = topic.channel
 
     const channel = server.channels.cache.get(channelId)
 
     channel.send(topic.notifyDiscussionMessage)
-    /**
-     * get the category of the message
-     * identify the role for that category
-     * identify the channel for that role/category
-     * send a messsage to that channel that:
-     *  @ the role here to say "hey a discussion is happening here"
-     */
-
 }
 
 
@@ -209,7 +199,6 @@ function notifyPassionateUsers(category, server) {
  * on message, when sentiment exceeds threshold, automatically set role
  * 
  */
-
 async function setUserRoleForPassion(user, category, server) {
     const sentiment = await getUserSentiment(user.id, category)
     if (sentiment >= config.thresholds.passionate) {
