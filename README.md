@@ -15,7 +15,7 @@
 - [Leanne Young](https://github.com/leanne-young)<br>
 
 ## Technologies
-You can find our devpost submission [here](https://devpost.com/software/karaokebot).
+You can find our devpost submission [here](https://devpost.com/software/chaterest).
 
 ### JavaScript
 - Node.js
